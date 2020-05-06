@@ -17,7 +17,7 @@ cmake .
 make
 ```
 
-Use `preprocess.py` to calculate eigenvectors, geodesic maps, shot descriptors of trained models, save in .mat format:
+Use `preprocess.py` to calculate eigenvectors, geodesic maps, shot descriptors of input shapes, save in .mat format:
 ```
 usage: preprocess.py [-h] [-d DATAROOT] [-sd SAVE_DIR] [-ne NUM_EIGEN]
                      [--no-shot] [--no-geo] [--no-dec]
