@@ -19,7 +19,23 @@ make
 
 Calculate eigenvectors, geodesic maps, shot descriptors of trained models, save in .mat format:
 ```
-python3 preprocess.py
+usage: preprocess.py [-h] [-d DATAROOT] [-sd SAVE_DIR] [-ne NUM_EIGEN]
+                     [--no-shot] [--no-geo] [--no-dec]
+
+Preprocess data for FMNet training. Compute Laplacian eigen decomposition,
+shot features, and geodesic distance for each shape.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DATAROOT, --dataroot DATAROOT
+                        root directory of the dataset
+  -sd SAVE_DIR, --save-dir SAVE_DIR
+                        root directory to save the computed matrices
+  -ne NUM_EIGEN, --num-eigen NUM_EIGEN
+                        number of eigenvectors kept.
+  --no-shot             Do not compute shot features.
+  --no-geo              Do not compute geodesic distances.
+  --no-dec              Do not compute Laplacian eigen decomposition.
 ```
 
 ## Usage

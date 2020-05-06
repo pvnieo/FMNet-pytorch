@@ -61,8 +61,8 @@ class SoftcorNet(nn.Module):
         """One pass in soft core net.
 
         Arguments:
-            feat_x {Torch.Tensor} -- input learned feature 1. Shape: batch-size x num-vertices x num-features
-            feat_y {Torch.Tensor} -- learned feature2. Shape: batch-size x num-vertices x num-features
+            feat_x {Torch.Tensor} -- learned feature 1. Shape: batch-size x num-vertices x num-features
+            feat_y {Torch.Tensor} -- learned feature 2. Shape: batch-size x num-vertices x num-features
             evecs_x {Torch.Tensor} -- eigen vectors decomposition of shape 2. Shape: batch-size x num-vertices x num-eigenvectors
             evecs_y {Torch.Tensor} -- eigen vectors decomposition of shape 2. Shape: batch-size x num-vertices x num-eigenvectors
 
@@ -103,9 +103,9 @@ class FMNet(nn.Module):
         """One pass in FMNet.
 
         Arguments:
-            feat_x {Torch.Tensor} -- input learned feature 1. Shape: batch-size x num-vertices x num-features
-            feat_y {Torch.Tensor} -- learned feature2. Shape: batch-size x num-vertices x num-features
-            evecs_x {Torch.Tensor} -- eigen vectors decomposition of shape 2. Shape: batch-size x num-vertices x num-eigenvectors
+            feat_x {Torch.Tensor} -- hand crafted feature 1. Shape: batch-size x num-vertices x num-features
+            feat_y {Torch.Tensor} -- hand crafted feature 2. Shape: batch-size x num-vertices x num-features
+            evecs_x {Torch.Tensor} -- eigen vectors decomposition of shape 1. Shape: batch-size x num-vertices x num-eigenvectors
             evecs_y {Torch.Tensor} -- eigen vectors decomposition of shape 2. Shape: batch-size x num-vertices x num-eigenvectors
 
         Returns:
