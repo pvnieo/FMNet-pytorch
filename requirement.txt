@@ -1,5 +1,9 @@
 numpy
 scipy
 sklearn
+tqdm
 plyfile
+trimesh
+networkx
+joblib
 torch

@@ -57,21 +57,25 @@ class SoftcorNet(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, feat_x, feat_y, evecs_x, evecs_y):
+    def forward(self, feat_x, feat_y, evecs_x, evecs_y, evecs_trans_x, evecs_trans_y):
         """One pass in soft core net.
 
         Arguments:
             feat_x {Torch.Tensor} -- learned feature 1. Shape: batch-size x num-vertices x num-features
             feat_y {Torch.Tensor} -- learned feature 2. Shape: batch-size x num-vertices x num-features
-            evecs_x {Torch.Tensor} -- eigen vectors decomposition of shape 2. Shape: batch-size x num-vertices x num-eigenvectors
+            evecs_x {Torch.Tensor} -- eigen vectors decomposition of shape 1. Shape: batch-size x num-vertices x num-eigenvectors
             evecs_y {Torch.Tensor} -- eigen vectors decomposition of shape 2. Shape: batch-size x num-vertices x num-eigenvectors
+            evecs_trans_x: {Torch.Tensor} -- inverse eigen vectors decomposition of shape 1. defined as evecs_x.t() @ mass_matrix.
+                                             Shape: batch-size x num-eigenvectors x num-vertices
+            evecs_trans_y: {Torch.Tensor} -- inverse eigen vectors decomposition of shape 2. defined as evecs_y.t() @ mass_matrix.
+                                             Shape: batch-size x num-eigenvectors x num-vertices
 
         Returns:
             Torch.Tensor -- soft correspondence matrix. Shape: batch_size x num_vertices x num_vertices.
         """
         # compute linear operator matrix representation C
-        F_hat = torch.bmm(evecs_x.transpose(1, 2), feat_x)
-        G_hat = torch.bmm(evecs_y.transpose(1, 2), feat_y)
+        F_hat = torch.bmm(evecs_trans_x, feat_x)
+        G_hat = torch.bmm(evecs_trans_y, feat_y)
         F_hat, G_hat = F_hat.transpose(1, 2), G_hat.transpose(1, 2)
         Cs = []
         for i in range(feat_x.size(0)):
@@ -80,7 +84,7 @@ class SoftcorNet(nn.Module):
         C = torch.cat(Cs, dim=0)
 
         # compute soft correspondence matrix P
-        P = torch.abs(torch.bmm(torch.bmm(evecs_y, C), evecs_x.transpose(1, 2)))
+        P = torch.abs(torch.bmm(torch.bmm(evecs_y, C), evecs_trans_x))
         P = F.normalize(P, 2, dim=1) ** 2
         return P, C
 
@@ -99,7 +103,7 @@ class FMNet(nn.Module):
         self.refine_net = RefineNet(n_residual_blocks, in_dim)
         self.softcor = SoftcorNet()
 
-    def forward(self, feat_x, feat_y, evecs_x, evecs_y):
+    def forward(self, feat_x, feat_y, evecs_x, evecs_y, evecs_trans_x, evecs_trans_y):
         """One pass in FMNet.
 
         Arguments:
@@ -115,17 +119,5 @@ class FMNet(nn.Module):
         """
         feat_x = self.refine_net(feat_x)
         feat_y = self.refine_net(feat_y)
-        P, C = self.softcor(feat_x, feat_y, evecs_x, evecs_y)
+        P, C = self.softcor(feat_x, feat_y, evecs_x, evecs_y, evecs_trans_x, evecs_trans_y)
         return P, C
-
-
-if __name__ == "__main__":
-    bs, n_points, n_feat, n_basis = 10, 1000, 352, 100
-    feat_x = torch.rand(bs, n_points, n_feat)
-    feat_y = torch.rand(bs, n_points, n_feat)
-    evecs_x = torch.rand(bs, n_points, n_basis)
-    evecs_y = torch.rand(bs, n_points, n_basis)
-    fmnet = FMNet()
-    P, C = fmnet(feat_x, feat_y, evecs_x, evecs_y)
-    print(P.size(), C.size())
-    print(torch.sum(P, 1))

@@ -6,7 +6,8 @@ import numpy as np
 import torch
 # project
 from model import FMNet
-from utils import FAUSTDataset, SoftErrorLoss
+from faust_dataset import FAUSTDataset
+from loss import SoftErrorLoss
 
 
 def train_fmnet(args):
@@ -20,7 +21,7 @@ def train_fmnet(args):
 
     # create dataset
     dataset = FAUSTDataset(args.dataroot)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True, num_workers=args.n_cpu)
     # create model
     fmnet = FMNet(n_residual_blocks=args.num_blocks, in_dim=args.feat_dim).to(device)  # number of features of SHOT descriptor
     optimizer = torch.optim.Adam(fmnet.parameters(), lr=args.lr, betas=(args.b1, args.b2))
@@ -31,27 +32,29 @@ def train_fmnet(args):
     for epoch in range(1, args.n_epochs + 1):
         for i, data in enumerate(dataloader):
             data = [x.to(device) for x in data]
-            feat_x, evecs_x, dist_x, feat_y, evecs_y, dist_y = data
+            feat_x, evecs_x, evecs_trans_x, dist_x, feat_y, evecs_y, evecs_trans_y, dist_y = data
 
             # sample vertices
             vertices = np.random.choice(feat_x.size(1), args.n_vertices)
-            feat_x, evecs_x = feat_x[:, vertices, :], evecs_x[:, vertices, :]
-            feat_y, evecs_y = feat_y[:, vertices, :], evecs_y[:, vertices, :]
+            feat_x, evecs_x, evecs_trans_x = feat_x[:, vertices, :], evecs_x[:, vertices, :], evecs_trans_x[:, :, vertices]
+            feat_y, evecs_y, evecs_trans_y = feat_y[:, vertices, :], evecs_y[:, vertices, :], evecs_trans_y[:, :, vertices]
             dist_x, dist_y = dist_x[:, vertices, :][:, :, vertices], dist_y[:, vertices, :][:, :, vertices]
 
             # do iteration
-            optimizer.zero_grad()
             fmnet.train()
-            P, _ = fmnet(feat_x, feat_y, evecs_x, evecs_y)
+            P, _ = fmnet(feat_x, feat_y, evecs_x, evecs_y, evecs_trans_x, evecs_trans_y)
             loss = criterion(P, dist_y)
             loss.backward()
-            optimizer.step()
+            if (i + 1) % args.batch_size == 0:
+                optimizer.step()
+                optimizer.zero_grad()
 
-            # log and save model
+            # log
             iterations += 1
             if iterations % args.log_interval == 0:
                 print(f"#epoch:{epoch}, #batch:{i + 1}, #iteration:{iterations}, loss:{loss}")
 
+        # save model
         if (epoch + 1) % args.checkpoint_interval == 0:
             torch.save(fmnet.state_dict(), os.path.join(args.save_dir, 'epoch{}.pth'.format(epoch)))
 

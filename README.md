@@ -8,16 +8,19 @@ pip3 install -r requirements.txt
 ```
 
 ## Download data & preprocessing
-Download the FAUST dataset (or other) from original [website](http://faust.is.tue.mpg.de).
+Download the desired dataset and put it in the `data` folder. Multiple datasets are available [here](https://github.com/pvnieo/datasets-zoo).
+
+<ins>An example with the faust-remeshed dataset is provided</ins>.
 
 Build shot calculator:
 ```
-cd data/shot
+cd fmnet/utils/shot
 cmake .
 make
 ```
+If you got any errors in this step, please see [here](https://github.com/pvnieo/3d-utils/tree/master/shot).
 
-Use `preprocess.py` to calculate eigenvectors, geodesic maps, shot descriptors of input shapes, save in .mat format:
+Use `fmnet/preprocess.py` to calculate the Laplace decomposition, geodesic distance using the Dijkstra algorithm and the shot descriptors of input shapes, data are saved in .mat format:
 ```
 usage: preprocess.py [-h] [-d DATAROOT] [-sd SAVE_DIR] [-ne NUM_EIGEN]
                      [--no-shot] [--no-geo] [--no-dec]
@@ -37,6 +40,7 @@ optional arguments:
   --no-geo              Do not compute geodesic distances.
   --no-dec              Do not compute Laplacian eigen decomposition.
 ```
+**NB**: if the shapes have many vertices, the computation of geodesic distance will consume a lot of memory and take a lot of time.
 
 ## Usage
 Use the `train.py` script to train the FMNet network.
