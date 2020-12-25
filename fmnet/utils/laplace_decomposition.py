@@ -95,4 +95,4 @@ def laplace_decomposition(verts, faces, neig=50):
     evecs = np.array(evecs, ndmin=2)
     evecs_trans = evecs.T @ A
     evals = np.array(evals)
-    return evals, evecs, evecs_trans
+    return evals, evecs, evecs_trans, np.sqrt(A.diagonal().sum())

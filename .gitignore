@@ -128,7 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# vscode settings
+.vscode/*
+
 # ignore folder
-data/models
-data/faust
-data/shot/shot.so
+data/save
+data/faust/processed

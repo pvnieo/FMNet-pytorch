@@ -13,7 +13,7 @@ import trimesh
 import networkx as nx
 # project
 import utils.shot.shot as shot
-from utils.io import read_mesh, write_mesh
+from utils.io import read_mesh
 from utils.laplace_decomposition import laplace_decomposition
 
 # SHOT's hyperparameters
@@ -70,6 +70,7 @@ def process_mesh(mesh, save_dir, args):
 
 def main(args):
     save_root = Path(args.save_dir)
+    save_root.mkdir(parents=True, exist_ok=True)
     meshes_root = Path(args.dataroot)
 
     meshes = list(meshes_root.iterdir())
@@ -83,9 +84,9 @@ if __name__ == '__main__':
                        Compute Laplacian eigen decomposition, shot features, and geodesic distance for each shape."""
     )
     parser.add_argument('-d', '--dataroot', required=False,
-                        default="./data/MPI-FAUST/training/registrations", help='root directory of the dataset')
+                        default="../data/faust/raw", help='root directory of the dataset')
     parser.add_argument('-sd', '--save-dir', required=False,
-                        default="./data/faust/train", help='root directory to save the processed dataset')
+                        default="../data/faust/processed", help='root directory to save the processed dataset')
     parser.add_argument("-ne", "--num-eigen", type=int, default=100, help="number of eigenvectors kept.")
     parser.add_argument("-nj", "--njobs", type=int, default=-2, help="Number of parallel processes to use.")
     parser.add_argument("--nn", type=int, default=20,

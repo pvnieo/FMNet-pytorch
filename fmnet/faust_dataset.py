@@ -26,7 +26,7 @@ class FAUSTDataset(Dataset):
         """
         mat = sio.loadmat(path)
         return (torch.Tensor(mat['feat']).float(), torch.Tensor(mat['evecs']).float(),
-                torch.Tensor(mat['evecs_trans']).float(), torch.Tensor(mat['dist']).float())
+                torch.Tensor(mat['evecs_trans']).float(), torch.Tensor(mat['geod_dist']).float())
 
     def __len__(self):
         return len(self.combinations)

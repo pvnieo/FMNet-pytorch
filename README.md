@@ -18,27 +18,25 @@ cd fmnet/utils/shot
 cmake .
 make
 ```
-If you got any errors in this step, please see [here](https://github.com/pvnieo/3d-utils/tree/master/shot).
+If you got any errors in compiling shot, please see [here](https://github.com/pvnieo/3d-utils/tree/master/shot).
 
 Use `fmnet/preprocess.py` to calculate the Laplace decomposition, geodesic distance using the Dijkstra algorithm and the shot descriptors of input shapes, data are saved in .mat format:
 ```
-usage: preprocess.py [-h] [-d DATAROOT] [-sd SAVE_DIR] [-ne NUM_EIGEN]
-                     [--no-shot] [--no-geo] [--no-dec]
+usage: preprocess.py [-h] [-d DATAROOT] [-sd SAVE_DIR] [-ne NUM_EIGEN] [-nj NJOBS] [--nn NN]
 
-Preprocess data for FMNet training. Compute Laplacian eigen decomposition,
-shot features, and geodesic distance for each shape.
+Preprocess data for FMNet training. Compute Laplacian eigen decomposition, shot features, and geodesic distance for each shape.
 
 optional arguments:
   -h, --help            show this help message and exit
   -d DATAROOT, --dataroot DATAROOT
                         root directory of the dataset
   -sd SAVE_DIR, --save-dir SAVE_DIR
-                        root directory to save the computed matrices
+                        root directory to save the processed dataset
   -ne NUM_EIGEN, --num-eigen NUM_EIGEN
                         number of eigenvectors kept.
-  --no-shot             Do not compute shot features.
-  --no-geo              Do not compute geodesic distances.
-  --no-dec              Do not compute Laplacian eigen decomposition.
+  -nj NJOBS, --njobs NJOBS
+                        Number of parallel processes to use.
+  --nn NN               Number of Neighbor to consider when computing geodesic matrix.
 ```
 **NB**: if the shapes have many vertices, the computation of geodesic distance will consume a lot of memory and take a lot of time.
 
@@ -58,7 +56,6 @@ optional arguments:
   -bs BATCH_SIZE, --batch-size BATCH_SIZE
                         size of the batches
   --n-epochs N_EPOCHS   number of epochs of training
-  --feat-dim FEAT_DIM   Input feature dimension
   -nv N_VERTICES, --n-vertices N_VERTICES
                         Number of vertices used per shape
   -nb NUM_BLOCKS, --num-blocks NUM_BLOCKS
