@@ -7,3 +7,4 @@ trimesh
 networkx
 joblib
 torch
+torchvision

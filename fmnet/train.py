@@ -2,11 +2,11 @@
 import argparse
 import os
 # 3p
-import numpy as np
 import torch
+from torchvision import transforms
 # project
 from model import FMNet
-from faust_dataset import FAUSTDataset
+from faust_dataset import FAUSTDataset, RandomSampling
 from loss import SoftErrorLoss
 
 
@@ -23,8 +23,9 @@ def train_fmnet(args):
 
     # create dataset
     print("creating dataset")
-    dataset = FAUSTDataset(args.dataroot, args.dim_basis)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True, num_workers=args.n_cpu)
+    composed = transforms.Compose([RandomSampling(args.n_vertices)])
+    dataset = FAUSTDataset(args.dataroot, args.dim_basis, transform=composed)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
     # create model
     print("creating model")
     fmnet = FMNet(n_residual_blocks=args.num_blocks, in_dim=352).to(device)  # number of features of SHOT descriptor
@@ -40,20 +41,12 @@ def train_fmnet(args):
             data = [x.to(device) for x in data]
             feat_x, evecs_x, evecs_trans_x, dist_x, feat_y, evecs_y, evecs_trans_y, dist_y = data
 
-            # sample vertices
-            n_vert = min(feat_x.size(1), feat_y.size(1))
-            vertices = np.random.choice(n_vert, args.n_vertices)
-            feat_x, evecs_x, evecs_trans_x = feat_x[:, vertices, :], evecs_x[:, vertices, :], evecs_trans_x[:, :, vertices]
-            feat_y, evecs_y, evecs_trans_y = feat_y[:, vertices, :], evecs_y[:, vertices, :], evecs_trans_y[:, :, vertices]
-            dist_x, dist_y = dist_x[:, vertices, :][:, :, vertices], dist_y[:, vertices, :][:, :, vertices]
-
             # do iteration
             P, _ = fmnet(feat_x, feat_y, evecs_x, evecs_y, evecs_trans_x, evecs_trans_y)
             loss = criterion(P, dist_y)
             loss.backward()
-            if (i + 1) % args.batch_size == 0:
-                optimizer.step()
-                optimizer.zero_grad()
+            optimizer.step()
+            optimizer.zero_grad()
 
             # log
             iterations += 1
