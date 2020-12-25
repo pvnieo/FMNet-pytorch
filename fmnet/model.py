@@ -72,6 +72,7 @@ class SoftcorNet(nn.Module):
 
         Returns:
             Torch.Tensor -- soft correspondence matrix. Shape: batch_size x num_vertices x num_vertices.
+            Torch.Tensor -- Functional map matrix. Shape: batch_size x num-eigenvectors x num-eigenvectors.
         """
         # compute linear operator matrix representation C
         F_hat = torch.bmm(evecs_trans_x, feat_x)
