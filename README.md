@@ -3,7 +3,7 @@ A pytorch implementation of: "Deep Functional Maps: Structured Prediction for De
 
 ## Installation
 This implementation runs on python >= 3.7, use pip to install dependencies:
-```
+```bash
 pip3 install -r requirements.txt
 ```
 
@@ -13,7 +13,7 @@ Download the desired dataset and put it in the `data` folder. Multiple datasets 
 <ins>An example with the faust-remeshed dataset is provided</ins>.
 
 Build shot calculator:
-```
+```bash
 cd fmnet/utils/shot
 cmake .
 make
@@ -21,7 +21,7 @@ make
 If you got any errors in compiling shot, please see [here](https://github.com/pvnieo/3d-utils/tree/master/shot).
 
 Use `fmnet/preprocess.py` to calculate the Laplace decomposition, geodesic distance using the Dijkstra algorithm and the shot descriptors of input shapes, data are saved in .mat format:
-```
+```bash
 usage: preprocess.py [-h] [-d DATAROOT] [-sd SAVE_DIR] [-ne NUM_EIGEN] [-nj NJOBS] [--nn NN]
 
 Preprocess data for FMNet training. Compute Laplacian eigen decomposition, shot features, and geodesic distance for each shape.
@@ -42,11 +42,11 @@ optional arguments:
 
 ## Usage
 Use the `train.py` script to train the FMNet network.
-```
-usage: train.py [-h] [--lr LR] [--b1 B1] [--b2 B2] [-bs BATCH_SIZE] [--n-epochs N_EPOCHS] [--feat-dim FEAT_DIM] [-nv N_VERTICES] [-nb NUM_BLOCKS] [-d DATAROOT] [--save-dir SAVE_DIR]
-                [--n-cpu N_CPU] [--no-cuda] [--checkpoint-interval CHECKPOINT_INTERVAL] [--log-interval LOG_INTERVAL]
+```bash
+usage: train.py [-h] [--lr LR] [--b1 B1] [--b2 B2] [-bs BATCH_SIZE] [--n-epochs N_EPOCHS] [--dim-basis DIM_BASIS] [-nv N_VERTICES] [-nb NUM_BLOCKS] [-d DATAROOT] [--save-dir SAVE_DIR] [--n-cpu N_CPU]
+                [--no-cuda] [--checkpoint-interval CHECKPOINT_INTERVAL] [--log-interval LOG_INTERVAL]
 
-Lunch the training of FMNet model.
+Launch the training of FMNet model.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -56,6 +56,8 @@ optional arguments:
   -bs BATCH_SIZE, --batch-size BATCH_SIZE
                         size of the batches
   --n-epochs N_EPOCHS   number of epochs of training
+  --dim-basis DIM_BASIS
+                        number of eigenvectors used for representation.
   -nv N_VERTICES, --n-vertices N_VERTICES
                         Number of vertices used per shape
   -nb NUM_BLOCKS, --num-blocks NUM_BLOCKS
@@ -72,6 +74,6 @@ optional arguments:
 ```
 
 ### Example
-```
-python3 train.py -d ./data/faust/train_mini -bs 2 -n-epochs 2
+```bash
+python3 train.py -bs 4 --n-epochs 10
 ```

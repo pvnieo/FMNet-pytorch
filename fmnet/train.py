@@ -22,28 +22,32 @@ def train_fmnet(args):
         os.makedirs(args.save_dir)
 
     # create dataset
-    dataset = FAUSTDataset(args.dataroot)
+    print("creating dataset")
+    dataset = FAUSTDataset(args.dataroot, args.dim_basis)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True, num_workers=args.n_cpu)
     # create model
+    print("creating model")
     fmnet = FMNet(n_residual_blocks=args.num_blocks, in_dim=352).to(device)  # number of features of SHOT descriptor
     optimizer = torch.optim.Adam(fmnet.parameters(), lr=args.lr, betas=(args.b1, args.b2))
     criterion = SoftErrorLoss().to(device)
 
     # Training loop
+    print("start training")
     iterations = 0
     for epoch in range(1, args.n_epochs + 1):
+        fmnet.train()
         for i, data in enumerate(dataloader):
             data = [x.to(device) for x in data]
             feat_x, evecs_x, evecs_trans_x, dist_x, feat_y, evecs_y, evecs_trans_y, dist_y = data
 
             # sample vertices
-            vertices = np.random.choice(feat_x.size(1), args.n_vertices)
+            n_vert = min(feat_x.size(1), feat_y.size(1))
+            vertices = np.random.choice(n_vert, args.n_vertices)
             feat_x, evecs_x, evecs_trans_x = feat_x[:, vertices, :], evecs_x[:, vertices, :], evecs_trans_x[:, :, vertices]
             feat_y, evecs_y, evecs_trans_y = feat_y[:, vertices, :], evecs_y[:, vertices, :], evecs_trans_y[:, :, vertices]
             dist_x, dist_y = dist_x[:, vertices, :][:, :, vertices], dist_y[:, vertices, :][:, :, vertices]
 
             # do iteration
-            fmnet.train()
             P, _ = fmnet(feat_x, feat_y, evecs_x, evecs_y, evecs_trans_x, evecs_trans_y)
             loss = criterion(P, dist_y)
             loss.backward()
@@ -70,7 +74,9 @@ if __name__ == "__main__":
     parser.add_argument("--b2", type=float, default=0.999, help="adam: decay of first order momentum of gradient")
     parser.add_argument("-bs", "--batch-size", type=int, default=8, help="size of the batches")
     parser.add_argument("--n-epochs", type=int, default=50, help="number of epochs of training")
-    parser.add_argument("-nv", "--n-vertices", type=int, default=2500, help="Number of vertices used per shape")
+    parser.add_argument('--dim-basis', type=int, default=40,
+                        help='number of eigenvectors used for representation.')
+    parser.add_argument("-nv", "--n-vertices", type=int, default=1500, help="Number of vertices used per shape")
     parser.add_argument("-nb", "--num-blocks", type=int, default=7, help="number of resnet blocks")
     parser.add_argument('-d', '--dataroot', required=False, default="../data/faust/processed",
                         help='root directory of the dataset')

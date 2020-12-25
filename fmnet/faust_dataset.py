@@ -10,8 +10,9 @@ from torch.utils.data import Dataset
 
 class FAUSTDataset(Dataset):
     """FAUST dataset"""
-    def __init__(self, root, transform=None):
+    def __init__(self, root, dim_basis=100, transform=None):
         self.root = root
+        self.dim_basis = dim_basis
         self.transform = transform
         self.samples = [join(root, f) for f in listdir(root) if isfile(join(root, f))]
         self.combinations = list(permutations(range(len(self.samples)), 2))
@@ -25,8 +26,8 @@ class FAUSTDataset(Dataset):
         dist: num_vertices * num_vertices
         """
         mat = sio.loadmat(path)
-        return (torch.Tensor(mat['feat']).float(), torch.Tensor(mat['evecs']).float(),
-                torch.Tensor(mat['evecs_trans']).float(), torch.Tensor(mat['geod_dist']).float())
+        return (torch.Tensor(mat['feat']).float(), torch.Tensor(mat['evecs'])[:, :self.dim_basis].float(),
+                torch.Tensor(mat['evecs_trans'])[:self.dim_basis, :].float(), torch.Tensor(mat['geod_dist']).float())
 
     def __len__(self):
         return len(self.combinations)
