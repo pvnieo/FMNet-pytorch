@@ -28,7 +28,8 @@ class FAUSTDataset(Dataset):
         """
         mat = sio.loadmat(path)
         return (torch.Tensor(mat['feat']).float(), torch.Tensor(mat['evecs'])[:, :self.dim_basis].float(),
-                torch.Tensor(mat['evecs_trans'])[:self.dim_basis, :].float(), torch.Tensor(mat['geod_dist']).float())
+                torch.Tensor(mat['evecs_trans'])[:self.dim_basis, :].float(),
+                torch.Tensor(mat['geod_dist']).float(), torch.Tensor(mat['vts']).long())
 
     def __len__(self):
         return len(self.combinations)
@@ -36,12 +37,14 @@ class FAUSTDataset(Dataset):
     def __getitem__(self, index):
         idx1, idx2 = self.combinations[index]
         path1, path2 = self.samples[idx1], self.samples[idx2]
+
+        feat_x, evecs_x, evecs_trans_x, dist_x, vts_x = self.loader(path1)
+        feat_x, evecs_x, evecs_trans_x, dist_x = feat_x[vts_x], evecs_x[vts_x], evecs_trans_x[:, vts_x], dist_x[vts_x][:, vts_x]
+        feat_y, evecs_y, evecs_trans_y, dist_y, vts_y = self.loader(path2)
+        feat_y, evecs_y, evecs_trans_y, dist_y = feat_y[vts_y], evecs_y[vts_y], evecs_trans_y[:, vts_y], dist_y[vts_y][:, vts_y]
         if self.transform is not None:
-            feat_x, evecs_x, evecs_trans_x, dist_x = self.transform(self.loader(path1))
-            feat_y, evecs_y, evecs_trans_y, dist_y = self.transform(self.loader(path2))
-        else:
-            feat_x, evecs_x, evecs_trans_x, dist_x = self.loader(path1)
-            feat_y, evecs_y, evecs_trans_y, dist_y = self.loader(path2)
+            feat_x, evecs_x, evecs_trans_x, dist_x = self.transform((feat_x, evecs_x, evecs_trans_x, dist_x))
+            feat_y, evecs_y, evecs_trans_y, dist_y = self.transform((feat_y, evecs_y, evecs_trans_y, dist_y))
 
         return [feat_x, evecs_x, evecs_trans_x, dist_x, feat_y, evecs_y, evecs_trans_y, dist_y]
 

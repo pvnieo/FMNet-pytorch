@@ -36,7 +36,7 @@ def compute_geodesic_matrix(verts, faces, NN):
     return geodesic_x
 
 
-def process_mesh(mesh, save_dir, args):
+def process_mesh(mesh, corres_root, save_dir, args):
     new_name = mesh.stem
 
     verts, faces = read_mesh(mesh)
@@ -64,6 +64,10 @@ def process_mesh(mesh, save_dir, args):
     shot_features = shot.compute(verts, NORMAL_R, SHOT_R).reshape(-1, 352)
     to_save["feat"] = shot_features
 
+    # add correspandance
+    if corres_root is not None:
+        to_save["vts"] = np.loadtxt(corres_root / f"{new_name}.vts", dtype=np.int32)
+
     # save
     sio.savemat(save_dir / f"{new_name}.mat", to_save)
 
@@ -71,10 +75,11 @@ def process_mesh(mesh, save_dir, args):
 def main(args):
     save_root = Path(args.save_dir)
     save_root.mkdir(parents=True, exist_ok=True)
-    meshes_root = Path(args.dataroot)
+    meshes_root = Path(args.dataroot / "shapes")
+    corres_root = Path(args.dataroot / "correspondences") if Path(args.dataroot / "correspondences").is_dir() else None
 
     meshes = list(meshes_root.iterdir())
-    _ = Parallel(n_jobs=args.njobs)(delayed(process_mesh)(mesh, save_root, args)
+    _ = Parallel(n_jobs=args.njobs)(delayed(process_mesh)(mesh, corres_root, save_root, args)
                                     for mesh in tqdm(meshes))
 
 

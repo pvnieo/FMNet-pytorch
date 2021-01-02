@@ -86,7 +86,7 @@ class SoftcorNet(nn.Module):
 
         # compute soft correspondence matrix P
         P = torch.abs(torch.bmm(torch.bmm(evecs_y, C), evecs_trans_x))
-        P = F.normalize(P, 2, dim=1) ** 2
+        P = F.normalize(P, 2, dim=1)
         return P, C
 
 
