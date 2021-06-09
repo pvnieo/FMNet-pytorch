@@ -9,8 +9,9 @@ class ResidualBlock(nn.Module):
     def __init__(self, in_dim, out_dim):
         super().__init__()
         self.fc1 = nn.Linear(in_dim, out_dim)
-        self.bn = nn.BatchNorm1d(out_dim, eps=1e-3, momentum=1e-3)
+        self.bn1 = nn.BatchNorm1d(out_dim, eps=1e-3, momentum=1e-3)
         self.fc2 = nn.Linear(out_dim, out_dim)
+        self.bn2 = nn.BatchNorm1d(out_dim, eps=1e-3, momentum=1e-3)
 
         if in_dim != out_dim:
             self.projection = nn.Sequential(
@@ -21,8 +22,8 @@ class ResidualBlock(nn.Module):
             self.projection = None
 
     def forward(self, x):
-        x_res = F.relu(self.bn(self.fc1(x).transpose(1, 2)).transpose(1, 2))
-        x_res = self.bn(self.fc2(x_res).transpose(1, 2)).transpose(1, 2)
+        x_res = F.relu(self.bn1(self.fc1(x).transpose(1, 2)).transpose(1, 2))
+        x_res = self.bn2(self.fc2(x_res).transpose(1, 2)).transpose(1, 2)
         if self.projection:
             x = self.projection(x)
         x_res += x
